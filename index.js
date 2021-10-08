@@ -6,7 +6,7 @@ import { MongoClient } from "mongodb";
 const app = express();
 
 dotenv.config();
-const PORT = 5000;
+const PORT = process.env.PORT; // Heroku will fill automatically
 
 // Tell express what format data you are going to get - json, xml, text
 // middleware - gatekeeper
@@ -14,6 +14,9 @@ const PORT = 5000;
 app.use(express.json());
 // express.json() - inbuilt middleware
 // 3rd party, custom middleware
+
+// Heroku does not have dotenv - file
+// MONGO_URL - settings
 
 console.log(process.env);
 // password - url - hide the url

@@ -1,8 +1,19 @@
 // express - server
 // const express = require("express"); // third party package  type: commonjs
+import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import express from "express"; // latest syntax - type: module
 import { MongoClient } from "mongodb";
+import {
+  createManager,
+  createUsers,
+  deleteUserById,
+  getManagers,
+  getUserById,
+  getUsers,
+  updateUserById,
+} from "./helper.js";
+// .js at end MUST
 const app = express();
 
 dotenv.config();
@@ -18,10 +29,11 @@ app.use(express.json());
 // Heroku does not have dotenv - file
 // MONGO_URL - settings
 
-console.log(process.env);
+// console.log(process.env);
 // password - url - hide the url
 async function createConnection() {
-  const MONGO_URL = process.env.MONGO_URL;
+  const MONGO_URL = "mongodb://localhost/users";
+  // const MONGO_URL = process.env.MONGO_URL;
   const client = new MongoClient(MONGO_URL);
   await client.connect();
   console.log("Successfully connected!!!");
@@ -37,85 +49,64 @@ app.get("/", (request, response) => {
   response.send("Hello, All :) !!!");
 });
 
-app.get("/users/:id", async (request, response) => {
-  console.log(request.params);
-  //   const id = request.params.id;
-  const { id } = request.params;
+async function genPassword(password) {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
 
+app.post("/manager/signup", async (request, response) => {
+  // const { color, age } = request.query;
   const client = await createConnection();
+  const { username, password } = request.body;
 
-  const user = await client
-    .db("users")
-    .collection("people")
-    .findOne({ id: id });
+  console.log(username, password);
+  const hashedPassword = await genPassword(password);
 
-  console.log(user);
+  const result = await createManager(client, username, hashedPassword);
+  response.send(result);
+});
+
+app.get("/managers", async (request, response) => {
+  // const { color, age } = request.query;
+  const client = await createConnection();
+  const managers = await getManagers(client);
+  response.send(managers);
+});
+
+app.get("/users/:id", async (request, response) => {
+  const { id } = request.params;
+  const client = await createConnection();
+  const user = await getUserById(client, id);
   response.send(user);
 });
 
 app.delete("/users/:id", async (request, response) => {
-  console.log(request.params);
-  //   const id = request.params.id;
   const { id } = request.params;
-
   const client = await createConnection();
-
-  const user = await client
-    .db("users")
-    .collection("people")
-    .deleteOne({ id: id });
-
-  console.log(user);
+  const user = await deleteUserById(client, id);
   response.send(user);
 });
 
 // id - identify the person,  new data (new color)
 app.patch("/users/:id", async (request, response) => {
-  console.log(request.params);
-  //   const id = request.params.id;
   const { id } = request.params;
-
   const client = await createConnection();
   const newData = request.body;
-  console.log(id, request.body);
-
-  const user = await client
-    .db("users")
-    .collection("people")
-    .updateOne({ id: id }, { $set: newData });
-
-  console.log(user);
+  const user = await updateUserById(client, id, newData);
   response.send(user);
 });
 
 app.get("/users", async (request, response) => {
-  // const { color, age } = request.query;
   const client = await createConnection();
-
-  const users = await client
-    .db("users")
-    .collection("people")
-    .find({})
-    .toArray();
-
-  console.log(users);
-
+  const users = await getUsers(client);
   response.send(users);
 });
 
 // Create user
 app.post("/users", async (request, response) => {
-  // const { color, age } = request.query;
   const client = await createConnection();
   const addUsers = request.body;
-
-  const result = await client
-    .db("users")
-    .collection("people")
-    .insertMany(addUsers);
-
-  console.log(addUsers, result);
-
+  const result = await createUsers(client, addUsers);
   response.send(result);
 });
 
@@ -159,3 +150,9 @@ app.listen(PORT, () => console.log("The server is started in ", PORT));
 // age - only given - filter all people  = age
 // color & age - filter both by color & all people = age
 // Install Postman
+
+// Common problems
+// 1.  "start": "node index.js"
+// 2.  .env,  process.env.PORT
+// 3. Setting MONGO_URL
+// 4. Heroku  > Deploy > Manual deploy

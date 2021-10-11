@@ -1,3 +1,5 @@
+import { MongoClient } from "mongodb";
+
 async function getUsers(client) {
   return await client.db("users").collection("people").find({}).toArray();
 }
@@ -32,6 +34,20 @@ async function getManagers(client) {
   return await client.db("users").collection("managers").find({}).toArray();
 }
 
+async function genPassword(password) {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
+
+async function createConnection() {
+  const MONGO_URL = "mongodb://localhost/users";
+  // const MONGO_URL = process.env.MONGO_URL;
+  const client = new MongoClient(MONGO_URL);
+  await client.connect();
+  console.log("Successfully connected!!!");
+  return client;
+}
+
 // 1st inline export
 // 1000 lines - 2nd way export
 export {
@@ -42,4 +58,6 @@ export {
   getUserById,
   getUsers,
   updateUserById,
+  genPassword,
+  createConnection,
 };

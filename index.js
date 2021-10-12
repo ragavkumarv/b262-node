@@ -1,5 +1,6 @@
 // express - server
 // const express = require("express"); // third party package  type: commonjs
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express"; // latest syntax - type: module
 // .js at end MUST
@@ -12,6 +13,7 @@ dotenv.config();
 const PORT = process.env.PORT; // Heroku will fill automatically
 // middleware data -> json format
 app.use(express.json());
+app.use(cors());
 
 // Checks all the requests for valid token
 // custom middleware

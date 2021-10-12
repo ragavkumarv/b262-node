@@ -1,11 +1,20 @@
+import bcrypt from "bcrypt";
 import { MongoClient } from "mongodb";
 
 async function getUsers(client) {
   return await client.db("users").collection("people").find({}).toArray();
 }
 
+async function getMovies(client) {
+  return await client.db("users").collection("movies").find({}).toArray();
+}
+
 async function createUsers(client, addUsers) {
   return await client.db("users").collection("people").insertMany(addUsers);
+}
+
+async function createMovies(client, addMovies) {
+  return await client.db("users").collection("movies").insertMany(addMovies);
 }
 
 async function updateUserById(client, id, newData) {
@@ -40,8 +49,9 @@ async function genPassword(password) {
 }
 
 async function createConnection() {
-  const MONGO_URL = "mongodb://localhost/users";
-  // const MONGO_URL = process.env.MONGO_URL;
+  // const MONGO_URL = "mongodb://localhost/users";
+  const MONGO_URL = process.env.MONGO_URL;
+  console.log(MONGO_URL);
   const client = new MongoClient(MONGO_URL);
   await client.connect();
   console.log("Successfully connected!!!");
@@ -60,4 +70,6 @@ export {
   updateUserById,
   genPassword,
   createConnection,
+  createMovies,
+  getMovies,
 };

@@ -7,6 +7,7 @@ import {
   getUsers,
   updateUserById,
 } from "../helper.js";
+import { auth } from "../middleware/auth.js";
 const router = express.Router();
 
 // 1. import router
@@ -14,13 +15,13 @@ const router = express.Router();
 // 3. export router & import in index.js (use in index.js)
 // 4. replace paths
 
-router.get("/", async (request, response) => {
+router.get("/", auth, async (request, response) => {
   const client = await createConnection();
   const users = await getUsers(client);
   response.send(users);
 });
 
-router.get("/:id", async (request, response) => {
+router.get("/:id", auth, async (request, response) => {
   const { id } = request.params;
   const client = await createConnection();
   const user = await getUserById(client, id);
@@ -28,7 +29,7 @@ router.get("/:id", async (request, response) => {
 });
 
 // Create user
-router.post("/", async (request, response) => {
+router.post("/", auth, async (request, response) => {
   const client = await createConnection();
   const addUsers = request.body;
   const result = await createUsers(client, addUsers);
@@ -36,7 +37,7 @@ router.post("/", async (request, response) => {
 });
 
 // id - identify the person,  new data (new color)
-router.patch("/:id", async (request, response) => {
+router.patch("/:id", auth, async (request, response) => {
   const { id } = request.params;
   const client = await createConnection();
   const newData = request.body;
@@ -44,7 +45,7 @@ router.patch("/:id", async (request, response) => {
   response.send(user);
 });
 
-router.delete("/:id", async (request, response) => {
+router.delete("/:id", auth, async (request, response) => {
   const { id } = request.params;
   const client = await createConnection();
   const user = await deleteUserById(client, id);

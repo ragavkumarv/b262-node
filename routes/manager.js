@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import express from "express";
 import {
   createConnection,
@@ -25,12 +26,29 @@ router.post("/signup", async (request, response) => {
   // const { color, age } = request.query;
   const client = await createConnection();
   const { username, password } = request.body;
-
-  console.log(username, password);
   const hashedPassword = await genPassword(password);
-
   const result = await createManager(client, username, hashedPassword);
   response.send(result);
+});
+
+router.post("/login", async (request, response) => {
+  // const { color, age } = request.query;
+  const client = await createConnection();
+  const { username, password } = request.body;
+
+  const result = await client
+    .db("users")
+    .collection("managers")
+    .findOne({ username: username });
+  console.log(result);
+
+  const storedDbPassword = result.password;
+  const isPasswordMatch = await bcrypt.compare(password, storedDbPassword);
+  if (isPasswordMatch) {
+    response.send({ message: "Successful login" });
+  } else {
+    response.send({ message: "Invalid login" });
+  }
 });
 
 export const managerRouter = router;

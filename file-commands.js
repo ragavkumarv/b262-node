@@ -48,7 +48,7 @@ console.log(os.arch());
 // });
 
 // // call stack - blocking operation
-// const data = fs.readFileSync("./nice.txt", "utf8");
+const data = fs.readFileSync("./nice.txt", "utf8");
 // console.log(data);
 
 // fs.copyFile("./nice.txt", "good1.txt", () => {
